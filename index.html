@@ -12,11 +12,11 @@
   <script>
     async function enviarPeticion() {
       const data = new URLSearchParams();
-      data.append("country_id", "961");
-      data.append("country_name", "Uruguay desde GitHub");
+      data.append("country_id", "970");
+      data.append("country_name", "Paraguay desde prueba");
       data.append("region_id", "5");
-      data.append("currency_code", "UYU");
-      data.append("idiomas", "Spanish,Aymara");
+      data.append("currency_code", "PYG");
+      data.append("idiomas", "Spanish");
 
       const response = await fetch("https://g6851acff20e063-sonamzd62h6f2xr1.adb.sa-santiago-1.oraclecloudapps.com/ords/examenfinal/registro/actualizar", {
         method: "POST",
