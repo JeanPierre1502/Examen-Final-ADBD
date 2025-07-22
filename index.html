@@ -2,62 +2,153 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Prueba API REST Oracle</title>
+  <title>Gestor Países - API Oracle</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f9; color: #333; }
-    h2 { color: #4caf50; }
-    form { background: white; padding: 20px; border-radius: 8px; max-width: 400px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 10px; }
-    input[type="text"], input[type="number"] {
-      width: 100%; padding: 8px; margin-top: 5px;
-      border: 1px solid #ccc; border-radius: 4px;
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      color: #333;
     }
-    button { margin-top: 15px; padding: 10px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #45a049; }
-    pre { background: #eee; padding: 15px; border-radius: 5px; max-width: 600px; }
+    header {
+      background: #4caf50;
+      color: white;
+      width: 100%;
+      text-align: center;
+      padding: 20px 0;
+      font-size: 1.5em;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      margin-top: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #resultado {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      text-align: left;
+      max-width: 600px;
+      padding: 15px;
+      border-radius: 5px;
+      background: #eee;
+      width: 90%;
+    }
+    .success { border-left: 5px solid #4caf50; }
+    .error { border-left: 5px solid #f44336; }
+    #loader {
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h2>Formulario para actualizar país e idiomas</h2>
-  <form id="apiForm">
-    <label>ID del país:</label>
+  <header>Gestor de Países - Consumo API REST</header>
+
+  <form id="apiForm" onsubmit="event.preventDefault(); enviarPeticion();">
+    <label for="country_id">ID del país *</label>
     <input type="number" id="country_id" required>
 
-    <label>Nombre del país:</label>
+    <label for="country_name">Nombre del país *</label>
     <input type="text" id="country_name" required>
 
-    <label>ID de región:</label>
+    <label for="region_id">ID de región *</label>
     <input type="number" id="region_id" required>
 
-    <label>Código de moneda:</label>
+    <label for="currency_code">Código de moneda *</label>
     <input type="text" id="currency_code" required>
 
-    <label>Idiomas (separados por coma):</label>
+    <label for="idiomas">Idiomas (separados por coma) *</label>
     <input type="text" id="idiomas" placeholder="Spanish,Quechua" required>
 
-    <button type="button" onclick="enviarPeticion()">Enviar</button>
+    <button type="submit">Enviar</button>
+    <div id="loader">Procesando solicitud...</div>
   </form>
 
-  <h3>Resultado:</h3>
   <pre id="resultado">Esperando envío...</pre>
 
   <script>
     async function enviarPeticion() {
+      // Validaciones previas
+      const countryId = document.getElementById("country_id").value.trim();
+      const regionId = document.getElementById("region_id").value.trim();
+      if (isNaN(countryId) || isNaN(regionId)) {
+        mostrarResultado({status: "error", mensaje: "Country ID y Region ID deben ser numéricos."});
+        return;
+      }
+
       const data = new URLSearchParams();
-      data.append("country_id", document.getElementById("country_id").value);
-      data.append("country_name", document.getElementById("country_name").value);
-      data.append("region_id", document.getElementById("region_id").value);
-      data.append("currency_code", document.getElementById("currency_code").value);
-      data.append("idiomas", document.getElementById("idiomas").value);
+      data.append("country_id", countryId);
+      data.append("country_name", document.getElementById("country_name").value.trim());
+      data.append("region_id", regionId);
+      data.append("currency_code", document.getElementById("currency_code").value.trim());
+      data.append("idiomas", document.getElementById("idiomas").value.trim());
 
-      const response = await fetch("https://g6851acff20e063-sonamzd62h6f2xr1.adb.sa-santiago-1.oraclecloudapps.com/ords/examenfinal/registro/actualizar", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: data
-      });
+      document.getElementById("loader").style.display = "block";
+      document.getElementById("resultado").className = "";
+      document.getElementById("resultado").innerText = "";
 
-      const result = await response.json();
-      document.getElementById("resultado").innerText = JSON.stringify(result, null, 2);
+      try {
+        const response = await fetch("https://g6851acff20e063-sonamzd62h6f2xr1.adb.sa-santiago-1.oraclecloudapps.com/ords/examenfinal/registro/actualizar", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: data
+        });
+        const result = await response.json();
+        mostrarResultado(result);
+      } catch (error) {
+        mostrarResultado({status: "error", mensaje: error.toString()});
+      } finally {
+        document.getElementById("loader").style.display = "none";
+      }
+    }
+
+    function mostrarResultado(result) {
+      const resultado = document.getElementById("resultado");
+      resultado.innerText = JSON.stringify(result, null, 2);
+      if (result.status === "ok") {
+        resultado.className = "success";
+      } else {
+        resultado.className = "error";
+      }
     }
   </script>
 </body>
